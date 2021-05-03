@@ -105,10 +105,8 @@ func Run(args []string) error {
 
 func checkSlots() error {
 	// Search for slots
-	var err error
 	if len(pinCode) != 0 {
-		err = searchByPincode(pinCode)
+		return searchByPincode(pinCode)
 	}
-	err = searchByStateDistrict(age, state, district)
-	return err
+	return searchByStateDistrict(age, state, district)
 }
