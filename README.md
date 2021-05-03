@@ -2,7 +2,7 @@
 
 CoWIN Portal Vaccine availability notifier
 
-covaccine-notifier periodically checks and sends email notifications for available slots on CoWIN portal in a given area and age.
+covaccine-notifier periodically checks and sends email notifications for available slots for the next 7 days on CoWIN portal in a given area and age.
 
 
 ## Installation
@@ -64,7 +64,6 @@ covaccine-notifier --pincode 444002 --age 27  --email <email-id> --password <ema
 docker run --rm -ti ghcr.io/prasadg193/covaccine-notifier:latest  --state Maharashtra --district Akola --age 27  --email <email-id> --password <email-password>
 ```
 
-
 ### Running on Kubernetes Cluster
 
 If you are not willing to keep your terminal on all the time :smile:, you can also create a Pod on K8s cluster
@@ -72,3 +71,11 @@ If you are not willing to keep your terminal on all the time :smile:, you can al
 ```
 kubectl run covaccine-notifier --image=ghcr.io/prasadg193/covaccine-notifier:latest --command -- /covaccine-notifier --state Maharashtra --district Akola --age 27  --email <email-id> --password <email-password>
 ```
+
+## Contributing
+
+We love your input! We want to make contributing to this project as easy and transparent as possible, whether it's:
+- Reporting a bug
+- Discussing the current state of the code
+- Submitting a fix
+- Proposing new features
