@@ -66,7 +66,7 @@ type Appointments struct {
 		Sessions []struct {
 			SessionID         string   `json:"session_id"`
 			Date              string   `json:"date"`
-			AvailableCapacity int      `json:"available_capacity"`
+			AvailableCapacity float64  `json:"available_capacity"`
 			MinAgeLimit       int      `json:"min_age_limit"`
 			Vaccine           string   `json:"vaccine"`
 			Slots             []string `json:"slots"`
@@ -200,7 +200,7 @@ func getAvailableSessions(response []byte, age int) error {
 		return err
 	}
 	if buf.Len() == 0 {
-		log.Print("No slots available, rechecking")
+		log.Print("No slots available, rechecking after 3 mins")
 		return nil
 	}
 	log.Print("Found available slots, sending email")
