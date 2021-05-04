@@ -23,6 +23,10 @@ const (
 	listDistrictsURLFormat      = "/v2/admin/location/districts/%d"
 )
 
+var (
+	stateID, districtID int
+)
+
 type StateList struct {
 	States []struct {
 		StateID    int    `json:"state_id"`
@@ -85,6 +89,7 @@ func queryServer(path string) ([]byte, error) {
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Accept-Language", "hi_IN")
+	log.Print("Querying endpoint: ", baseURL+path)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -121,6 +126,7 @@ func getStateIDByName(state string) (int, error) {
 	}
 	for _, s := range states.States {
 		if strings.ToLower(s.StateName) == strings.ToLower(state) {
+			log.Printf("State Details - ID: %d, Name: %s", s.StateID, s.StateName)
 			return s.StateID, nil
 		}
 	}
@@ -138,6 +144,7 @@ func getDistrictIDByName(stateID int, district string) (int, error) {
 	}
 	for _, d := range dl.Districts {
 		if strings.ToLower(d.DistrictName) == strings.ToLower(district) {
+			log.Printf("District Details - ID: %d, Name: %s", d.DistrictID, d.DistrictName)
 			return d.DistrictID, nil
 		}
 	}
@@ -145,13 +152,18 @@ func getDistrictIDByName(stateID int, district string) (int, error) {
 }
 
 func searchByStateDistrict(age int, state, district string) error {
-	stateID, err := getStateIDByName(state)
-	if err != nil {
-		return err
+	var err1 error
+	if stateID == 0 {
+		stateID, err1 = getStateIDByName(state)
+		if err1 != nil {
+			return err1
+		}
 	}
-	districtID, err := getDistrictIDByName(stateID, district)
-	if err != nil {
-		return err
+	if districtID == 0 {
+		districtID, err1 = getDistrictIDByName(stateID, district)
+		if err1 != nil {
+			return err1
+		}
 	}
 	response, err := queryServer(fmt.Sprintf(calendarByDistrictURLFormat, districtID, timeNow()))
 	if err != nil {
@@ -200,7 +212,7 @@ func getAvailableSessions(response []byte, age int) error {
 		return err
 	}
 	if buf.Len() == 0 {
-		log.Print("No slots available, rechecking after 3 mins")
+		log.Printf("No slots available, rechecking after %v seconds", interval)
 		return nil
 	}
 	log.Print("Found available slots, sending email")

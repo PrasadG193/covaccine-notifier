@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -11,9 +12,9 @@ import (
 )
 
 var (
-	pinCode, state, district, email, password string
+	pinCode, state, district, email, password, date string
 
-	age int
+	age, interval int
 
 	rootCmd = &cobra.Command{
 		Use:   "covaccine-notifier [FLAGS]",
@@ -25,14 +26,15 @@ var (
 )
 
 const (
-	pinCodeEnv       = "PIN_CODE"
-	stateNameEnv     = "STATE_NAME"
-	districtNameEnv  = "DISTRICT_NAME"
-	ageEnv           = "AGE"
-	emailIDEnv       = "EMAIL_ID"
-	emailPasswordEnv = "EMAIL_PASSOWORD"
+	pinCodeEnv        = "PIN_CODE"
+	stateNameEnv      = "STATE_NAME"
+	districtNameEnv   = "DISTRICT_NAME"
+	ageEnv            = "AGE"
+	emailIDEnv        = "EMAIL_ID"
+	emailPasswordEnv  = "EMAIL_PASSOWORD"
+	searchIntervalEnv = "SEARCH_INTERVAL"
 
-	searchInterval = time.Minute * 3
+	defaultSearchInterval = 60
 )
 
 func init() {
@@ -42,6 +44,8 @@ func init() {
 	rootCmd.PersistentFlags().IntVarP(&age, "age", "a", getIntEnv(ageEnv), "Search appointment for age")
 	rootCmd.PersistentFlags().StringVarP(&email, "email", "e", os.Getenv(emailIDEnv), "Email address to send notifications")
 	rootCmd.PersistentFlags().StringVarP(&password, "password", "p", os.Getenv(emailPasswordEnv), "Email ID password for auth")
+	rootCmd.PersistentFlags().IntVarP(&interval, "interval", "i", getIntEnv(searchIntervalEnv), fmt.Sprintf("Interval to repeat the search. Default: (%v) second", defaultSearchInterval))
+
 }
 
 // Execute executes the main command
@@ -63,6 +67,9 @@ func checkFlags() error {
 	}
 	if len(email) == 0 || len(password) == 0 {
 		return errors.New("Missing email creds")
+	}
+	if interval == 0 {
+		interval = defaultSearchInterval
 	}
 	return nil
 }
@@ -90,7 +97,7 @@ func Run(args []string) error {
 	if err := checkSlots(); err != nil {
 		return err
 	}
-	ticker := time.NewTicker(searchInterval)
+	ticker := time.NewTicker(time.Second * time.Duration(interval))
 	defer ticker.Stop()
 	for {
 		select {

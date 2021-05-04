@@ -25,8 +25,8 @@ docker pull ghcr.io/prasadg193/covaccine-notifier:latest
 
 covaccine-notifier can monitor vaccine availability either by pin-code or state and district names
 
-```
-./dist/covaccine-notifier_linux_amd64/covaccine-notifier --help
+```bash
+$ ./covaccine-notifier --help
 CoWIN Vaccine availability notifier India
 
 Usage:
@@ -37,6 +37,7 @@ Flags:
   -d, --district string   Search by district name
   -e, --email string      Email address to send notifications
   -h, --help              help for covaccine-notifier
+  -i, --interval int      Interval to repeat the search. Default: (60) second
   -p, --password string   Email ID password for auth
   -c, --pincode string    Search by pin code
   -s, --state string      Search by state name
