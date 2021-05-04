@@ -23,6 +23,11 @@ const (
 	listDistrictsURLFormat      = "/v2/admin/location/districts/%d"
 )
 
+var (
+	stateID, districtID int
+	err1 error
+)
+
 type StateList struct {
 	States []struct {
 		StateID    int    `json:"state_id"`
@@ -75,11 +80,16 @@ type Appointments struct {
 }
 
 func timeNow() string {
-	return time.Now().Format("02-01-2006")
+	t := time.Now()
+	t = t.AddDate(0,0,1)
+	date := t.Format("02-01-2006")
+	log.Printf("Looking for appointment for date: %q", date)
+	return date
 }
 
 func queryServer(path string) ([]byte, error) {
 	req, err := http.NewRequest("GET", baseURL+path, nil)
+	log.Print(baseURL + path)
 	if err != nil {
 		return nil, err
 	}
@@ -138,6 +148,7 @@ func getDistrictIDByName(stateID int, district string) (int, error) {
 	}
 	for _, d := range dl.Districts {
 		if strings.ToLower(d.DistrictName) == strings.ToLower(district) {
+			log.Printf("District Details -  ID: %q, Name: %q", d.DistrictID, d.DistrictName)
 			return d.DistrictID, nil
 		}
 	}
@@ -145,13 +156,17 @@ func getDistrictIDByName(stateID int, district string) (int, error) {
 }
 
 func searchByStateDistrict(age int, state, district string) error {
-	stateID, err := getStateIDByName(state)
-	if err != nil {
-		return err
+	if stateID == 0 {
+		stateID, err1 = getStateIDByName(state)
+		if err1 != nil {
+			return err1
+		}
 	}
-	districtID, err := getDistrictIDByName(stateID, district)
-	if err != nil {
-		return err
+	if districtID == 0 {
+		districtID, err1 = getDistrictIDByName(stateID, district)
+		if err1 != nil {
+			return err1
+		}
 	}
 	response, err := queryServer(fmt.Sprintf(calendarByDistrictURLFormat, districtID, timeNow()))
 	if err != nil {
@@ -200,7 +215,7 @@ func getAvailableSessions(response []byte, age int) error {
 		return err
 	}
 	if buf.Len() == 0 {
-		log.Print("No slots available, rechecking after 3 mins")
+		log.Printf("No slots available, rechecking after %v seconds", interval)
 		return nil
 	}
 	log.Print("Found available slots, sending email")

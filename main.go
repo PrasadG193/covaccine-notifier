@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -13,7 +14,7 @@ import (
 var (
 	pinCode, state, district, email, password string
 
-	age int
+	age, interval int
 
 	rootCmd = &cobra.Command{
 		Use:   "covaccine-notifier [FLAGS]",
@@ -31,8 +32,8 @@ const (
 	ageEnv           = "AGE"
 	emailIDEnv       = "EMAIL_ID"
 	emailPasswordEnv = "EMAIL_PASSOWORD"
-
-	searchInterval = time.Minute * 3
+	searchInterval = "SEARCH_INTERVAL"
+	defaultSearchInterval = 30
 )
 
 func init() {
@@ -42,6 +43,7 @@ func init() {
 	rootCmd.PersistentFlags().IntVarP(&age, "age", "a", getIntEnv(ageEnv), "Search appointment for age")
 	rootCmd.PersistentFlags().StringVarP(&email, "email", "e", os.Getenv(emailIDEnv), "Email address to send notifications")
 	rootCmd.PersistentFlags().StringVarP(&password, "password", "p", os.Getenv(emailPasswordEnv), "Email ID password for auth")
+	rootCmd.PersistentFlags().IntVarP(&interval, "searchInterval", "i", getIntEnv(searchInterval), "Interval to repeat search")
 }
 
 // Execute executes the main command
@@ -63,6 +65,9 @@ func checkFlags() error {
 	}
 	if len(email) == 0 || len(password) == 0 {
 		return errors.New("Missing email creds")
+	}
+	if interval == 0 {
+		interval = defaultSearchInterval
 	}
 	return nil
 }
@@ -90,11 +95,12 @@ func Run(args []string) error {
 	if err := checkSlots(); err != nil {
 		return err
 	}
-	ticker := time.NewTicker(searchInterval)
+	ticker := time.NewTicker(time.Second * time.Duration(interval))
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ticker.C:
+			fmt.Println("--------------------------------------------------------------------")
 			if err := checkSlots(); err != nil {
 				return err
 			}
