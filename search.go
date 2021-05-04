@@ -79,10 +79,12 @@ type Appointments struct {
 	} `json:"centers"`
 }
 
-func timeNow() string {
-	t := time.Now()
-	t = t.AddDate(0,0,1)
-	date := t.Format("02-01-2006")
+func getTime() string {
+	if date == "" {
+		t := time.Now()
+		t = t.AddDate(0, 0, 1)
+		date = t.Format("02-01-2006")
+	}
 	log.Printf("Looking for appointment for date: %q", date)
 	return date
 }
@@ -113,7 +115,7 @@ func queryServer(path string) ([]byte, error) {
 }
 
 func searchByPincode(pinCode string) error {
-	response, err := queryServer(fmt.Sprintf(calendarByPinURLFormat, pinCode, timeNow()))
+	response, err := queryServer(fmt.Sprintf(calendarByPinURLFormat, pinCode, getTime()))
 	if err != nil {
 		return errors.Wrap(err, "Failed to fetch appointment sessions")
 	}
@@ -168,7 +170,7 @@ func searchByStateDistrict(age int, state, district string) error {
 			return err1
 		}
 	}
-	response, err := queryServer(fmt.Sprintf(calendarByDistrictURLFormat, districtID, timeNow()))
+	response, err := queryServer(fmt.Sprintf(calendarByDistrictURLFormat, districtID, getTime()))
 	if err != nil {
 		return errors.Wrap(err, "Failed to fetch appointment sessions")
 	}

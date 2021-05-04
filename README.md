@@ -40,6 +40,8 @@ Flags:
   -p, --password string   Email ID password for auth
   -c, --pincode string    Search by pin code
   -s, --state string      Search by state name
+  -i, --interval int      Interval to repeat the search. Default: 30 seconds
+  -D, --date string       Appointment date (DD-MM-YYYY). Defaults to tomorrow.
 
 ```
 

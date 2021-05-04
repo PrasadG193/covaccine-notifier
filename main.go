@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	pinCode, state, district, email, password string
+	pinCode, state, district, email, password, date string
 
 	age, interval int
 
@@ -26,13 +26,14 @@ var (
 )
 
 const (
-	pinCodeEnv       = "PIN_CODE"
-	stateNameEnv     = "STATE_NAME"
-	districtNameEnv  = "DISTRICT_NAME"
-	ageEnv           = "AGE"
-	emailIDEnv       = "EMAIL_ID"
-	emailPasswordEnv = "EMAIL_PASSOWORD"
-	searchInterval = "SEARCH_INTERVAL"
+	pinCodeEnv            = "PIN_CODE"
+	stateNameEnv          = "STATE_NAME"
+	districtNameEnv       = "DISTRICT_NAME"
+	ageEnv                = "AGE"
+	emailIDEnv            = "EMAIL_ID"
+	emailPasswordEnv      = "EMAIL_PASSOWORD"
+	searchInterval        = "SEARCH_INTERVAL"
+	appointmentDate       = "APPOINTMENT_DATE"
 	defaultSearchInterval = 30
 )
 
@@ -43,7 +44,9 @@ func init() {
 	rootCmd.PersistentFlags().IntVarP(&age, "age", "a", getIntEnv(ageEnv), "Search appointment for age")
 	rootCmd.PersistentFlags().StringVarP(&email, "email", "e", os.Getenv(emailIDEnv), "Email address to send notifications")
 	rootCmd.PersistentFlags().StringVarP(&password, "password", "p", os.Getenv(emailPasswordEnv), "Email ID password for auth")
-	rootCmd.PersistentFlags().IntVarP(&interval, "searchInterval", "i", getIntEnv(searchInterval), "Interval to repeat search")
+	rootCmd.PersistentFlags().IntVarP(&interval, "interval", "i", getIntEnv(searchInterval), fmt.Sprintf("Interval to repeat the search. Default: (%v) second", defaultSearchInterval))
+	rootCmd.PersistentFlags().StringVarP(&date, "date", "D", os.Getenv(appointmentDate), "Appointment Date (DD-MM-YYYY). Defaults to tomorrow.")
+
 }
 
 // Execute executes the main command
@@ -68,6 +71,11 @@ func checkFlags() error {
 	}
 	if interval == 0 {
 		interval = defaultSearchInterval
+	}
+	if len(date) != 0 {
+		if _, err := time.Parse("02-01-2006", date); err != nil {
+			errors.New("Appointment date must be of the format DD-MM-YYYY.")
+		}
 	}
 	return nil
 }
