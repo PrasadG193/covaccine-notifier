@@ -25,7 +25,6 @@ const (
 
 var (
 	stateID, districtID int
-	err1 error
 )
 
 type StateList struct {
@@ -79,24 +78,18 @@ type Appointments struct {
 	} `json:"centers"`
 }
 
-func getTime() string {
-	if date == "" {
-		t := time.Now()
-		t = t.AddDate(0, 0, 1)
-		date = t.Format("02-01-2006")
-	}
-	log.Printf("Looking for appointment for date: %q", date)
-	return date
+func timeNow() string {
+	return time.Now().Format("02-01-2006")
 }
 
 func queryServer(path string) ([]byte, error) {
 	req, err := http.NewRequest("GET", baseURL+path, nil)
-	log.Print(baseURL + path)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Accept-Language", "hi_IN")
+	log.Print("Querying endpoint: ", baseURL+path)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -115,7 +108,7 @@ func queryServer(path string) ([]byte, error) {
 }
 
 func searchByPincode(pinCode string) error {
-	response, err := queryServer(fmt.Sprintf(calendarByPinURLFormat, pinCode, getTime()))
+	response, err := queryServer(fmt.Sprintf(calendarByPinURLFormat, pinCode, timeNow()))
 	if err != nil {
 		return errors.Wrap(err, "Failed to fetch appointment sessions")
 	}
@@ -133,6 +126,7 @@ func getStateIDByName(state string) (int, error) {
 	}
 	for _, s := range states.States {
 		if strings.ToLower(s.StateName) == strings.ToLower(state) {
+			log.Printf("State Details - ID: %d, Name: %s", s.StateID, s.StateName)
 			return s.StateID, nil
 		}
 	}
@@ -150,7 +144,7 @@ func getDistrictIDByName(stateID int, district string) (int, error) {
 	}
 	for _, d := range dl.Districts {
 		if strings.ToLower(d.DistrictName) == strings.ToLower(district) {
-			log.Printf("District Details -  ID: %q, Name: %q", d.DistrictID, d.DistrictName)
+			log.Printf("District Details - ID: %d, Name: %s", d.DistrictID, d.DistrictName)
 			return d.DistrictID, nil
 		}
 	}
@@ -158,6 +152,7 @@ func getDistrictIDByName(stateID int, district string) (int, error) {
 }
 
 func searchByStateDistrict(age int, state, district string) error {
+	var err1 error
 	if stateID == 0 {
 		stateID, err1 = getStateIDByName(state)
 		if err1 != nil {
@@ -170,7 +165,7 @@ func searchByStateDistrict(age int, state, district string) error {
 			return err1
 		}
 	}
-	response, err := queryServer(fmt.Sprintf(calendarByDistrictURLFormat, districtID, getTime()))
+	response, err := queryServer(fmt.Sprintf(calendarByDistrictURLFormat, districtID, timeNow()))
 	if err != nil {
 		return errors.Wrap(err, "Failed to fetch appointment sessions")
 	}
