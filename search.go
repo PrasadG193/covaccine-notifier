@@ -89,6 +89,7 @@ func queryServer(path string) ([]byte, error) {
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Accept-Language", "hi_IN")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.51")
 	log.Print("Querying endpoint: ", baseURL+path)
 
 	resp, err := http.DefaultClient.Do(req)
