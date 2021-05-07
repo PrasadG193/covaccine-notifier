@@ -17,8 +17,8 @@ import (
 // https://apisetu.gov.in/public/api/cowin
 const (
 	baseURL                     = "https://cdn-api.co-vin.in/api"
-	calendarByPinURLFormat      = "/v2/appointment/sessions/public/calendarByPin?pincode=%s&date=%s"
-	calendarByDistrictURLFormat = "/v2/appointment/sessions/public/calendarByDistrict?district_id=%d&date=%s"
+	calendarByPinURLFormat      = "/v2/appointment/sessions/calendarByPin?pincode=%s&date=%s"
+	calendarByDistrictURLFormat = "/v2/appointment/sessions/calendarByDistrict?district_id=%d&date=%s"
 	listStatesURLFormat         = "/v2/admin/location/states"
 	listDistrictsURLFormat      = "/v2/admin/location/districts/%d"
 )
@@ -90,6 +90,7 @@ func queryServer(path string) ([]byte, error) {
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Accept-Language", "hi_IN")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.51")
+
 	log.Print("Querying endpoint: ", baseURL+path)
 
 	resp, err := http.DefaultClient.Do(req)
@@ -98,12 +99,18 @@ func queryServer(path string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(fmt.Sprintf("Request failed with statusCode: %d", resp.StatusCode))
-	}
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
+	}
+	log.Print("Response: ", string(bodyBytes))
+
+	if resp.StatusCode != http.StatusOK {
+		// Sometimes the API returns "Unauthenticated access!", do not fail in that case
+		if resp.StatusCode == http.StatusUnauthorized {
+			return nil, nil
+		}
+		return nil, errors.New(fmt.Sprintf("Request failed with statusCode: %d", resp.StatusCode))
 	}
 	return bodyBytes, nil
 }
@@ -174,6 +181,10 @@ func searchByStateDistrict(age int, state, district string) error {
 }
 
 func getAvailableSessions(response []byte, age int) error {
+	if response == nil {
+		log.Printf("Received unexpected response, rechecking after %v seconds", interval)
+		return nil
+	}
 	appnts := Appointments{}
 	err := json.Unmarshal(response, &appnts)
 	if err != nil {
