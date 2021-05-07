@@ -18,7 +18,7 @@ curl -sfL https://raw.githubusercontent.com/PrasadG193/covaccine-notifier/main/i
 
 ### Docker
 ```
-docker pull ghcr.io/prasadg193/covaccine-notifier:v0.1.5
+docker pull ghcr.io/prasadg193/covaccine-notifier:v0.2.0
 ```
 
 ## Usage
@@ -65,7 +65,7 @@ covaccine-notifier --pincode 444002 --age 27  --email <email-id> --password <ema
 ### Docker
 
 ```
-docker run --rm -ti ghcr.io/prasadg193/covaccine-notifier:v0.1.5  --state Maharashtra --district Akola --age 27  --email <email-id> --password <email-password>
+docker run --rm -ti ghcr.io/prasadg193/covaccine-notifier:v0.2.0  --state Maharashtra --district Akola --age 27  --email <email-id> --password <email-password>
 ```
 
 ### Running on Kubernetes Cluster
@@ -73,7 +73,7 @@ docker run --rm -ti ghcr.io/prasadg193/covaccine-notifier:v0.1.5  --state Mahara
 If you are not willing to keep your terminal on all the time :smile:, you can also create a Pod on K8s cluster
 
 ```
-kubectl run covaccine-notifier --image=ghcr.io/prasadg193/covaccine-notifier:v0.1.5 --command -- /covaccine-notifier --state Maharashtra --district Akola --age 27  --email <email-id> --password <email-password>
+kubectl run covaccine-notifier --image=ghcr.io/prasadg193/covaccine-notifier:v0.2.0 --command -- /covaccine-notifier --state Maharashtra --district Akola --age 27  --email <email-id> --password <email-password>
 ```
 
 ## Contributing
