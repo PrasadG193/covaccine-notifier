@@ -26,7 +26,7 @@ jobs:
           args: release --rm-dist --skip-publish
         env:
           GORELEASER_CURRENT_TAG: latest
-      - name: Update and publish helm chart
+      - name: Build and push latest image
         if: success() &&  github.event_name  == 'push'  && endsWith(github.ref ,'main')
         run: |
           docker login ghcr.io -u ${{ secrets.GITHUB_USERNAME }} -p ${{ secrets.GITHUB_TOKEN }}
