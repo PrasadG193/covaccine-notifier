@@ -14,7 +14,7 @@ import (
 var (
 	pinCode, state, district, email, password, date string
 
-	age, interval int
+	age, interval, vaccine int
 
 	rootCmd = &cobra.Command{
 		Use:   "covaccine-notifier [FLAGS]",
@@ -33,8 +33,10 @@ const (
 	emailIDEnv        = "EMAIL_ID"
 	emailPasswordEnv  = "EMAIL_PASSOWORD"
 	searchIntervalEnv = "SEARCH_INTERVAL"
+	VaccineEnv        = "VACCINE"
 
-	defaultSearchInterval = 60
+	defaultSearchInterval    = 60
+	defaultVaccinePreference = 0
 )
 
 func init() {
@@ -45,6 +47,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&email, "email", "e", os.Getenv(emailIDEnv), "Email address to send notifications")
 	rootCmd.PersistentFlags().StringVarP(&password, "password", "p", os.Getenv(emailPasswordEnv), "Email ID password for auth")
 	rootCmd.PersistentFlags().IntVarP(&interval, "interval", "i", getIntEnv(searchIntervalEnv), fmt.Sprintf("Interval to repeat the search. Default: (%v) second", defaultSearchInterval))
+	rootCmd.PersistentFlags().IntVarP(&vaccine, "vaccine", "v", getIntEnv(VaccineEnv), fmt.Sprintf("Vaccine preferences - (1) Covishield, (2) Covaxin. Default: (%v) no preference", defaultVaccinePreference))
 
 }
 
@@ -70,6 +73,9 @@ func checkFlags() error {
 	}
 	if interval == 0 {
 		interval = defaultSearchInterval
+	}
+	if vaccine < 0 || vaccine > 2 {
+		return errors.New("Vaccine values can only be 0, 1 or 2")
 	}
 	return nil
 }
