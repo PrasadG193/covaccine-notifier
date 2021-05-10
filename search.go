@@ -21,9 +21,6 @@ const (
 	calendarByDistrictURLFormat = "/v2/appointment/sessions/calendarByDistrict?district_id=%d&date=%s"
 	listStatesURLFormat         = "/v2/admin/location/states"
 	listDistrictsURLFormat      = "/v2/admin/location/districts/%d"
-
-	covishield = "covishield"
-	covaxin    = "covaxin"
 )
 
 var (
@@ -184,13 +181,13 @@ func searchByStateDistrict(age int, state, district string) error {
 }
 
 // isPreferredVaccineAvailable checks for availability of preferred vaccine
-func isPreferredVaccineAvailable(current string, preference int) bool {
+func isPreferredVaccineAvailable(current, preference string) bool {
 	switch preference {
-	case 0:
+	case "":
 		return true
-	case 1:
+	case covishield:
 		return strings.ToLower(current) == covishield
-	case 2:
+	case covaxin:
 		return strings.ToLower(current) == covaxin
 	}
 
