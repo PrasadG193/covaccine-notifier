@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	pinCode, state, district, email, password, date string
+	pinCode, state, district, email, password, date, vaccine string
 
 	age, interval int
 
@@ -33,8 +33,12 @@ const (
 	emailIDEnv        = "EMAIL_ID"
 	emailPasswordEnv  = "EMAIL_PASSOWORD"
 	searchIntervalEnv = "SEARCH_INTERVAL"
+	vaccineEnv        = "VACCINE"
 
 	defaultSearchInterval = 60
+
+	covishield = "covishield"
+	covaxin    = "covaxin"
 )
 
 func init() {
@@ -45,7 +49,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&email, "email", "e", os.Getenv(emailIDEnv), "Email address to send notifications")
 	rootCmd.PersistentFlags().StringVarP(&password, "password", "p", os.Getenv(emailPasswordEnv), "Email ID password for auth")
 	rootCmd.PersistentFlags().IntVarP(&interval, "interval", "i", getIntEnv(searchIntervalEnv), fmt.Sprintf("Interval to repeat the search. Default: (%v) second", defaultSearchInterval))
-
+	rootCmd.PersistentFlags().StringVarP(&vaccine, "vaccine", "v", os.Getenv(vaccineEnv), fmt.Sprintf("Vaccine preferences - covishield (or) covaxin. Default: No preference"))
 }
 
 // Execute executes the main command
@@ -70,6 +74,9 @@ func checkFlags() error {
 	}
 	if interval == 0 {
 		interval = defaultSearchInterval
+	}
+	if !(vaccine == "" || vaccine == covishield || vaccine == covaxin) {
+		return errors.New("Invalid vaccine, please use covaxin or covishield")
 	}
 	return nil
 }

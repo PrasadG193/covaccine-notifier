@@ -180,6 +180,20 @@ func searchByStateDistrict(age int, state, district string) error {
 	return getAvailableSessions(response, age)
 }
 
+// isPreferredVaccineAvailable checks for availability of preferred vaccine
+func isPreferredVaccineAvailable(current, preference string) bool {
+	switch preference {
+	case "":
+		return true
+	case covishield:
+		return strings.ToLower(current) == covishield
+	case covaxin:
+		return strings.ToLower(current) == covaxin
+	}
+
+	return false
+}
+
 func getAvailableSessions(response []byte, age int) error {
 	if response == nil {
 		log.Printf("Received unexpected response, rechecking after %v seconds", interval)
@@ -194,7 +208,7 @@ func getAvailableSessions(response []byte, age int) error {
 	w := tabwriter.NewWriter(&buf, 1, 8, 1, '\t', 0)
 	for _, center := range appnts.Centers {
 		for _, s := range center.Sessions {
-			if s.MinAgeLimit <= age && s.AvailableCapacity != 0 {
+			if s.MinAgeLimit <= age && s.AvailableCapacity != 0 && isPreferredVaccineAvailable(s.Vaccine, vaccine) {
 				fmt.Fprintln(w, fmt.Sprintf("Center\t%s", center.Name))
 				fmt.Fprintln(w, fmt.Sprintf("State\t%s", center.StateName))
 				fmt.Fprintln(w, fmt.Sprintf("District\t%s", center.DistrictName))

@@ -41,6 +41,7 @@ Flags:
   -p, --password string   Email ID password for auth
   -c, --pincode string    Search by pin code
   -s, --state string      Search by state name
+  -v, --vaccine string    Vaccine preferences - covishield (or) covaxin. Default: No preference
 
 ```
 
