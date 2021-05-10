@@ -33,7 +33,7 @@ const (
 	emailIDEnv        = "EMAIL_ID"
 	emailPasswordEnv  = "EMAIL_PASSOWORD"
 	searchIntervalEnv = "SEARCH_INTERVAL"
-	VaccineEnv        = "VACCINE"
+	vaccineEnv        = "VACCINE"
 
 	defaultSearchInterval = 60
 
@@ -49,7 +49,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&email, "email", "e", os.Getenv(emailIDEnv), "Email address to send notifications")
 	rootCmd.PersistentFlags().StringVarP(&password, "password", "p", os.Getenv(emailPasswordEnv), "Email ID password for auth")
 	rootCmd.PersistentFlags().IntVarP(&interval, "interval", "i", getIntEnv(searchIntervalEnv), fmt.Sprintf("Interval to repeat the search. Default: (%v) second", defaultSearchInterval))
-	rootCmd.PersistentFlags().StringVarP(&vaccine, "vaccine", "v", os.Getenv(VaccineEnv), fmt.Sprintf("Vaccine preferences - covishield (or) covaxin. Default: No preference"))
+	rootCmd.PersistentFlags().StringVarP(&vaccine, "vaccine", "v", os.Getenv(vaccineEnv), fmt.Sprintf("Vaccine preferences - covishield (or) covaxin. Default: No preference"))
 }
 
 // Execute executes the main command
