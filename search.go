@@ -180,18 +180,13 @@ func searchByStateDistrict(age int, state, district string) error {
 	return getAvailableSessions(response, age)
 }
 
-// isPreferredVaccineAvailable checks for availability of preferred vaccine
-func isPreferredVaccineAvailable(current, preference string) bool {
-	switch preference {
-	case "":
+// isPreferredAvailable checks for availability of preferences
+func isPreferredAvailable(current, preference string) bool {
+	if preference == "" {
 		return true
-	case covishield:
-		return strings.ToLower(current) == covishield
-	case covaxin:
-		return strings.ToLower(current) == covaxin
+	} else {
+		return strings.ToLower(current) == preference
 	}
-
-	return false
 }
 
 func getAvailableSessions(response []byte, age int) error {
@@ -207,8 +202,11 @@ func getAvailableSessions(response []byte, age int) error {
 	var buf bytes.Buffer
 	w := tabwriter.NewWriter(&buf, 1, 8, 1, '\t', 0)
 	for _, center := range appnts.Centers {
+		if !isPreferredAvailable(center.FeeType, fee) {
+			continue
+		}
 		for _, s := range center.Sessions {
-			if s.MinAgeLimit <= age && s.AvailableCapacity != 0 && isPreferredVaccineAvailable(s.Vaccine, vaccine) {
+			if s.MinAgeLimit <= age && s.AvailableCapacity != 0 && isPreferredAvailable(s.Vaccine, vaccine) {
 				fmt.Fprintln(w, fmt.Sprintf("Center\t%s", center.Name))
 				fmt.Fprintln(w, fmt.Sprintf("State\t%s", center.StateName))
 				fmt.Fprintln(w, fmt.Sprintf("District\t%s", center.DistrictName))
