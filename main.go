@@ -71,6 +71,9 @@ func checkFlags() error {
 	if len(pinCode) == 0 && (len(state) == 0 || len(district) == 0) {
 		return errors.New("Missing state or district name option")
 	}
+    if len(pinCode) != 6 {
+        return errors.New("Invalid pincode")
+    }
 	if age == 0 {
 		return errors.New("Missing age option")
 	}
