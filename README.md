@@ -36,6 +36,7 @@ Flags:
   -a, --age int           Search appointment for age
   -d, --district string   Search by district name
   -e, --email string      Email address to send notifications
+  -f, --fee string        Fee preferences - free (or) paid. Default: No preference
   -h, --help              help for covaccine-notifier
   -i, --interval int      Interval to repeat the search. Default: (60) second
   -p, --password string   Email ID password for auth
