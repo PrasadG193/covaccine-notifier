@@ -70,7 +70,7 @@ type Appointments struct {
 		Sessions []struct {
 			SessionID         string   `json:"session_id"`
 			Date              string   `json:"date"`
-			AvailableCapacity float64  `json:"available_capacity"`
+			AvailableCapacity int      `json:"available_capacity"`
 			MinAgeLimit       int      `json:"min_age_limit"`
 			Vaccine           string   `json:"vaccine"`
 			Slots             []string `json:"slots"`
@@ -120,7 +120,7 @@ func searchByPincode(pinCode string) error {
 	if err != nil {
 		return errors.Wrap(err, "Failed to fetch appointment sessions")
 	}
-	return getAvailableSessions(response, age)
+	return getAvailableSessions(response, age, minCapacity)
 }
 
 func getStateIDByName(state string) (int, error) {
@@ -177,7 +177,7 @@ func searchByStateDistrict(age int, state, district string) error {
 	if err != nil {
 		return errors.Wrap(err, "Failed to fetch appointment sessions")
 	}
-	return getAvailableSessions(response, age)
+	return getAvailableSessions(response, age, minCapacity)
 }
 
 // isPreferredAvailable checks for availability of preferences
@@ -189,7 +189,7 @@ func isPreferredAvailable(current, preference string) bool {
 	}
 }
 
-func getAvailableSessions(response []byte, age int) error {
+func getAvailableSessions(response []byte, age int, minCapacity int) error {
 	if response == nil {
 		log.Printf("Received unexpected response, rechecking after %v seconds", interval)
 		return nil
@@ -206,7 +206,7 @@ func getAvailableSessions(response []byte, age int) error {
 			continue
 		}
 		for _, s := range center.Sessions {
-			if s.MinAgeLimit <= age && s.AvailableCapacity != 0 && isPreferredAvailable(s.Vaccine, vaccine) {
+			if s.MinAgeLimit <= age && s.AvailableCapacity >= minCapacity && isPreferredAvailable(s.Vaccine, vaccine) {
 				fmt.Fprintln(w, fmt.Sprintf("Center\t%s", center.Name))
 				fmt.Fprintln(w, fmt.Sprintf("State\t%s", center.StateName))
 				fmt.Fprintln(w, fmt.Sprintf("District\t%s", center.DistrictName))
@@ -221,7 +221,7 @@ func getAvailableSessions(response []byte, age int) error {
 				}
 				fmt.Fprintln(w, fmt.Sprintf("Sessions\t"))
 				fmt.Fprintln(w, fmt.Sprintf("\tDate\t%s", s.Date))
-				fmt.Fprintln(w, fmt.Sprintf("\tAvailableCapacity\t%f", s.AvailableCapacity))
+				fmt.Fprintln(w, fmt.Sprintf("\tAvailableCapacity\t%d", s.AvailableCapacity))
 				fmt.Fprintln(w, fmt.Sprintf("\tMinAgeLimit\t%d", s.MinAgeLimit))
 				fmt.Fprintln(w, fmt.Sprintf("\tVaccine\t%s", s.Vaccine))
 				fmt.Fprintln(w, fmt.Sprintf("\tSlots"))
