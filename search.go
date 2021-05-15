@@ -239,6 +239,13 @@ func getAvailableSessions(response []byte, age int) error {
 		log.Printf("No slots available, rechecking after %v seconds", interval)
 		return nil
 	}
-	log.Print("Found available slots, sending email")
-	return sendMail(email, password, buf.String())
+	log.Print("Found available slots, sending notification")
+	if notifier == "email" {
+		return sendMail(email, password, buf.String())
+	}
+	if notifier == "telegram" {
+		return sendTelegramMessage(buf.String())
+
+	}
+	return nil
 }

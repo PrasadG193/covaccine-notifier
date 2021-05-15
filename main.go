@@ -13,6 +13,7 @@ import (
 
 var (
 	pinCode, state, district, email, password, date, vaccine, fee string
+	notifier, tgApiToken, tgUsername                              string
 
 	age, interval int
 
@@ -35,6 +36,9 @@ const (
 	searchIntervalEnv = "SEARCH_INTERVAL"
 	vaccineEnv        = "VACCINE"
 	feeEnv            = "FEE"
+	tgApiTokenEnv     = "TG_TOKEN"
+	tgUsernameEnv     = "TG_USERNAME"
+	notifierEnv       = "NOTIFIER"
 
 	defaultSearchInterval = 60
 
@@ -55,6 +59,9 @@ func init() {
 	rootCmd.PersistentFlags().IntVarP(&interval, "interval", "i", getIntEnv(searchIntervalEnv), fmt.Sprintf("Interval to repeat the search. Default: (%v) second", defaultSearchInterval))
 	rootCmd.PersistentFlags().StringVarP(&vaccine, "vaccine", "v", os.Getenv(vaccineEnv), fmt.Sprintf("Vaccine preferences - covishield (or) covaxin. Default: No preference"))
 	rootCmd.PersistentFlags().StringVarP(&fee, "fee", "f", os.Getenv(feeEnv), fmt.Sprintf("Fee preferences - free (or) paid. Default: No preference"))
+	rootCmd.PersistentFlags().StringVarP(&notifier, "notifier", "n", os.Getenv(notifierEnv), "Notifier to use - email (or) telegram. Default: email")
+	rootCmd.PersistentFlags().StringVarP(&tgApiToken, "token", "t", os.Getenv(tgApiTokenEnv), fmt.Sprintf("telegram bot API token"))
+	rootCmd.PersistentFlags().StringVarP(&tgUsername, "username", "u", os.Getenv(tgUsernameEnv), fmt.Sprintf("telegram username"))
 }
 
 // Execute executes the main command
@@ -74,8 +81,17 @@ func checkFlags() error {
 	if age == 0 {
 		return errors.New("Missing age option")
 	}
-	if len(email) == 0 || len(password) == 0 {
-		return errors.New("Missing email creds")
+	if notifier == "telegram" {
+		if len(tgApiToken) == 0 || len(tgUsername) == 0 {
+			return errors.New("Missing telegram bot api token or username or both")
+		}
+	} else {
+		notifier = "email"
+	}
+	if notifier == "email" {
+		if len(email) == 0 || len(password) == 0 {
+			return errors.New("Missing email creds")
+		}
 	}
 	if interval == 0 {
 		interval = defaultSearchInterval
@@ -109,6 +125,12 @@ func Run(args []string) error {
 	if err := checkFlags(); err != nil {
 		return err
 	}
+	if notifier == "telegram" {
+		err := initTelegramBot(tgApiToken, tgUsername)
+		if err != nil {
+			return err
+		}
+	}
 	if err := checkSlots(); err != nil {
 		return err
 	}
@@ -122,7 +144,6 @@ func Run(args []string) error {
 			}
 		}
 	}
-	return nil
 }
 
 func checkSlots() error {

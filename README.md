@@ -43,10 +43,14 @@ Flags:
   -c, --pincode string    Search by pin code
   -s, --state string      Search by state name
   -v, --vaccine string    Vaccine preferences - covishield (or) covaxin. Default: No preference
-
+  -n, --notifier string   Notifier to use - email (or) telegram. Default: email
+  -t, --token string      Telegram bot API token
+  -u, --username string   Telegram username 
 ```
 
 **Note:** Gmail password won't work for 2FA enabled accounts. Follow [this](https://support.google.com/accounts/answer/185833?p=InvalidSecondFactor&visit_id=637554658548216477-2576856839&rd=1) guide to generate app token password and use it with `--password` arg 
+
+**Note:** For creating telegram bot follow [this](https://core.telegram.org/bots#6-botfather). Once the new bot is created successfully, send message to the bot before starting covaccine-notifier.
 
 ## Examples
 
