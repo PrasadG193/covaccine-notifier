@@ -17,8 +17,8 @@ import (
 // https://apisetu.gov.in/public/api/cowin
 const (
 	baseURL                     = "https://cdn-api.co-vin.in/api"
-	calendarByPinURLFormat      = "/v2/appointment/sessions/calendarByPin?pincode=%s&date=%s"
-	calendarByDistrictURLFormat = "/v2/appointment/sessions/calendarByDistrict?district_id=%d&date=%s"
+	calendarByPinURLFormat      = "/v2/appointment/sessions/public/calendarByPin?pincode=%s&date=%s"
+	calendarByDistrictURLFormat = "/v2/appointment/sessions/public/calendarByDistrict?district_id=%d&date=%s"
 	listStatesURLFormat         = "/v2/admin/location/states"
 	listDistrictsURLFormat      = "/v2/admin/location/districts/%d"
 )
