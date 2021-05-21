@@ -206,7 +206,7 @@ func getAvailableSessions(response []byte, age int, minCapacity int) error {
 			continue
 		}
 		for _, s := range center.Sessions {
-			if s.MinAgeLimit <= age && s.AvailableCapacity >= minCapacity && isPreferredAvailable(s.Vaccine, vaccine) {
+			if s.MinAgeLimit <= age && s.AvailableCapacity >= float64(minCapacity) && isPreferredAvailable(s.Vaccine, vaccine) {
 				fmt.Fprintln(w, fmt.Sprintf("Center\t%s", center.Name))
 				fmt.Fprintln(w, fmt.Sprintf("State\t%s", center.StateName))
 				fmt.Fprintln(w, fmt.Sprintf("District\t%s", center.DistrictName))
