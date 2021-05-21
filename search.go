@@ -70,7 +70,7 @@ type Appointments struct {
 		Sessions []struct {
 			SessionID         string   `json:"session_id"`
 			Date              string   `json:"date"`
-			AvailableCapacity int      `json:"available_capacity"`
+			AvailableCapacity float64  `json:"available_capacity"`
 			MinAgeLimit       int      `json:"min_age_limit"`
 			Vaccine           string   `json:"vaccine"`
 			Slots             []string `json:"slots"`
@@ -221,7 +221,7 @@ func getAvailableSessions(response []byte, age int, minCapacity int) error {
 				}
 				fmt.Fprintln(w, fmt.Sprintf("Sessions\t"))
 				fmt.Fprintln(w, fmt.Sprintf("\tDate\t%s", s.Date))
-				fmt.Fprintln(w, fmt.Sprintf("\tAvailableCapacity\t%d", s.AvailableCapacity))
+				fmt.Fprintln(w, fmt.Sprintf("\tAvailableCapacity\t%f", s.AvailableCapacity))
 				fmt.Fprintln(w, fmt.Sprintf("\tMinAgeLimit\t%d", s.MinAgeLimit))
 				fmt.Fprintln(w, fmt.Sprintf("\tVaccine\t%s", s.Vaccine))
 				fmt.Fprintln(w, fmt.Sprintf("\tSlots"))
