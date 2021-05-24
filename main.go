@@ -7,20 +7,25 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/PrasadG193/covaccine-notifier/pkg/notify"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
+type NotifierType string
+
 var (
 	pinCode, state, district, email, password, date, vaccine, fee string
-	notifier, tgApiToken, tgUsername                              string
-
-	age, interval int
+	tgApiToken, tgUsername                                        string
+	notifierType                                                  NotifierType
+	age, interval                                                 int
+	notifier                                                      notify.Notifier
 
 	rootCmd = &cobra.Command{
 		Use:   "covaccine-notifier [FLAGS]",
 		Short: "CoWIN Vaccine availability notifier India",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			notifierType = NotifierType(cmd.PersistentFlags().Lookup("notifier-type").Value.String())
 			return Run(args)
 		},
 	}
@@ -47,6 +52,9 @@ const (
 
 	free = "free"
 	paid = "paid"
+
+	EmailNotifierType    NotifierType = "email"
+	TelegramNotifierType NotifierType = "telegram"
 )
 
 func init() {
@@ -59,9 +67,9 @@ func init() {
 	rootCmd.PersistentFlags().IntVarP(&interval, "interval", "i", getIntEnv(searchIntervalEnv), fmt.Sprintf("Interval to repeat the search. Default: (%v) second", defaultSearchInterval))
 	rootCmd.PersistentFlags().StringVarP(&vaccine, "vaccine", "v", os.Getenv(vaccineEnv), fmt.Sprintf("Vaccine preferences - covishield (or) covaxin. Default: No preference"))
 	rootCmd.PersistentFlags().StringVarP(&fee, "fee", "f", os.Getenv(feeEnv), fmt.Sprintf("Fee preferences - free (or) paid. Default: No preference"))
-	rootCmd.PersistentFlags().StringVarP(&notifier, "notifier", "n", os.Getenv(notifierEnv), "Notifier to use - email (or) telegram. Default: email")
-	rootCmd.PersistentFlags().StringVarP(&tgApiToken, "token", "t", os.Getenv(tgApiTokenEnv), fmt.Sprintf("telegram bot API token"))
-	rootCmd.PersistentFlags().StringVarP(&tgUsername, "username", "u", os.Getenv(tgUsernameEnv), fmt.Sprintf("telegram username"))
+	rootCmd.PersistentFlags().StringVarP(&tgApiToken, "telegram-token", "t", os.Getenv(tgApiTokenEnv), fmt.Sprintf("telegram bot API token"))
+	rootCmd.PersistentFlags().StringVarP(&tgUsername, "telegram-username", "u", os.Getenv(tgUsernameEnv), fmt.Sprintf("telegram username"))
+	rootCmd.PersistentFlags().StringP("notifier-type", "n", os.Getenv(notifierEnv), "Notifier to use - email (or) telegram. Default: email")
 }
 
 // Execute executes the main command
@@ -81,14 +89,12 @@ func checkFlags() error {
 	if age == 0 {
 		return errors.New("Missing age option")
 	}
-	if notifier == "telegram" {
+	switch notifierType {
+	case TelegramNotifierType:
 		if len(tgApiToken) == 0 || len(tgUsername) == 0 {
 			return errors.New("Missing telegram bot api token or username or both")
 		}
-	} else {
-		notifier = "email"
-	}
-	if notifier == "email" {
+	default:
 		if len(email) == 0 || len(password) == 0 {
 			return errors.New("Missing email creds")
 		}
@@ -121,15 +127,23 @@ func getIntEnv(envVar string) int {
 	return i
 }
 
+func getNotifier() (notify.Notifier, error) {
+	switch notifierType {
+	case TelegramNotifierType:
+		return notify.NewTelegram(tgApiToken, tgUsername)
+	default:
+		return notify.NewEmail(email, password), nil
+	}
+}
+
 func Run(args []string) error {
 	if err := checkFlags(); err != nil {
 		return err
 	}
-	if notifier == "telegram" {
-		err := initTelegramBot(tgApiToken, tgUsername)
-		if err != nil {
-			return err
-		}
+	var err error
+	notifier, err = getNotifier()
+	if err != nil {
+		return err
 	}
 	if err := checkSlots(); err != nil {
 		return err

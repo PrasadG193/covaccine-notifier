@@ -1,4 +1,4 @@
-package main
+package notify
 
 import (
 	"fmt"
@@ -9,16 +9,15 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	chatID int64
-	bot    *tgbotapi.BotAPI
-)
+type Telegram struct {
+	ChatID int64
+	Bot    *tgbotapi.BotAPI
+}
 
-func initTelegramBot(token, username string) error {
-	var err error
-	bot, err = tgbotapi.NewBotAPI(token)
+func NewTelegram(token, username string) (Notifier, error) {
+	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Unable to find bot for the given botAPI token %s", token))
+		return nil, errors.New(fmt.Sprintf("Unable to find bot for the given botAPI token %s", token))
 	}
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
@@ -28,28 +27,31 @@ func initTelegramBot(token, username string) error {
 
 	updates, err := bot.GetUpdates(u)
 	if err != nil {
-		return errors.New("Unable to get channel for bot updates")
+		return nil, errors.New("Unable to get channel for bot updates")
 	}
 	for _, update := range updates {
 		if update.Message == nil { // ignore any non-Message Updates
 			continue
 		}
 		if strings.ToLower(update.Message.Chat.UserName) == strings.ToLower(username) {
-			chatID = update.Message.Chat.ID
+			chatID := update.Message.Chat.ID
 			log.Printf("chatID for the conversation between username: %s and bot: %s is %d", username, bot.Self.UserName, chatID)
-			return nil
+			return &Telegram{
+				ChatID: chatID,
+				Bot:    bot,
+			}, nil
 		}
 	}
-	return errors.New(fmt.Sprintf("Unable to get the chatID \n Send message to the bot %s", bot.Self.UserName))
+	return nil, errors.New(fmt.Sprintf("Unable to get the chatID \n Send message to the bot %s", bot.Self.UserName))
 }
 
-func sendTelegramMessage(body string) error {
+func (t *Telegram) SendMessage(body string) error {
 	if len(body) > 4096 {
 		log.Printf("message body too long, trimming it")
 		body = body[:4095]
 	}
-	msg := tgbotapi.NewMessage(chatID, body)
-	_, err := bot.Send(msg)
+	msg := tgbotapi.NewMessage(t.ChatID, body)
+	_, err := t.Bot.Send(msg)
 	if err != nil {
 		return errors.Wrap(err, "Failed to send message to telegram")
 	}

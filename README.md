@@ -33,19 +33,19 @@ Usage:
   covaccine-notifier [FLAGS] [flags]
 
 Flags:
-  -a, --age int           Search appointment for age
-  -d, --district string   Search by district name
-  -e, --email string      Email address to send notifications
-  -f, --fee string        Fee preferences - free (or) paid. Default: No preference
-  -h, --help              help for covaccine-notifier
-  -i, --interval int      Interval to repeat the search. Default: (60) second
-  -p, --password string   Email ID password for auth
-  -c, --pincode string    Search by pin code
-  -s, --state string      Search by state name
-  -v, --vaccine string    Vaccine preferences - covishield (or) covaxin. Default: No preference
-  -n, --notifier string   Notifier to use - email (or) telegram. Default: email
-  -t, --token string      Telegram bot API token
-  -u, --username string   Telegram username 
+  -a, --age int                    Search appointment for age
+  -d, --district string            Search by district name
+  -e, --email string               Email address to send notifications
+  -f, --fee string                 Fee preferences - free (or) paid. Default: No preference
+  -h, --help                       help for covaccine-notifier
+  -i, --interval int               Interval to repeat the search. Default: (60) second
+  -p, --password string            Email ID password for auth
+  -c, --pincode string             Search by pin code
+  -s, --state string               Search by state name
+  -v, --vaccine string             Vaccine preferences - covishield (or) covaxin. Default: No preference
+  -n, --notifier-type string       Notifier to use - email (or) telegram. Default: email
+  -t, --telegram-token string      Telegram bot API token
+  -u, --telegram-username string   Telegram username 
 ```
 
 **Note:** Gmail password won't work for 2FA enabled accounts. Follow [this](https://support.google.com/accounts/answer/185833?p=InvalidSecondFactor&visit_id=637554658548216477-2576856839&rd=1) guide to generate app token password and use it with `--password` arg 
@@ -66,6 +66,12 @@ covaccine-notifier --state Maharashtra --district Akola --age 27  --email <email
 
 ```
 covaccine-notifier --pincode 444002 --age 27  --email <email-id> --password <email-password>
+```
+
+#### Enable Telegram Notification
+
+```
+covaccine-notifier --pincode 444002 --age 27  --notifier-type telegram --telegram-token <tlegram-token> --telegram-username <telegram-username>
 ```
 
 ### Docker
