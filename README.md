@@ -46,6 +46,7 @@ Flags:
   -n, --notifier-type string       Notifier to use - email (or) telegram. Default: email
   -t, --telegram-token string      Telegram bot API token
   -u, --telegram-username string   Telegram username 
+  -m, --min-capacity int           Filter by minimum vaccination capacity. Default: 1
 ```
 
 **Note:** Gmail password won't work for 2FA enabled accounts. Follow [this](https://support.google.com/accounts/answer/185833?p=InvalidSecondFactor&visit_id=637554658548216477-2576856839&rd=1) guide to generate app token password and use it with `--password` arg 

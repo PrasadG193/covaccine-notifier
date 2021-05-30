@@ -120,7 +120,7 @@ func searchByPincode(pinCode string) error {
 	if err != nil {
 		return errors.Wrap(err, "Failed to fetch appointment sessions")
 	}
-	return getAvailableSessions(response, age)
+	return getAvailableSessions(response, age, minCapacity)
 }
 
 func getStateIDByName(state string) (int, error) {
@@ -177,7 +177,7 @@ func searchByStateDistrict(age int, state, district string) error {
 	if err != nil {
 		return errors.Wrap(err, "Failed to fetch appointment sessions")
 	}
-	return getAvailableSessions(response, age)
+	return getAvailableSessions(response, age, minCapacity)
 }
 
 // isPreferredAvailable checks for availability of preferences
@@ -189,7 +189,7 @@ func isPreferredAvailable(current, preference string) bool {
 	}
 }
 
-func getAvailableSessions(response []byte, age int) error {
+func getAvailableSessions(response []byte, age int, minCapacity int) error {
 	if response == nil {
 		log.Printf("Received unexpected response, rechecking after %v seconds", interval)
 		return nil
@@ -206,7 +206,7 @@ func getAvailableSessions(response []byte, age int) error {
 			continue
 		}
 		for _, s := range center.Sessions {
-			if s.MinAgeLimit <= age && s.AvailableCapacity != 0 && isPreferredAvailable(s.Vaccine, vaccine) {
+			if s.MinAgeLimit <= age && s.AvailableCapacity >= float64(minCapacity) && isPreferredAvailable(s.Vaccine, vaccine) {
 				fmt.Fprintln(w, fmt.Sprintf("Center\t%s", center.Name))
 				fmt.Fprintln(w, fmt.Sprintf("State\t%s", center.StateName))
 				fmt.Fprintln(w, fmt.Sprintf("District\t%s", center.DistrictName))

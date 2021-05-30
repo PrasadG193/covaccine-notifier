@@ -18,7 +18,7 @@ var (
 	pinCode, state, district, email, password, date, vaccine, fee string
 	tgApiToken, tgUsername                                        string
 	notifierType                                                  NotifierType
-	age, interval                                                 int
+	age, interval, minCapacity                                    int
 	notifier                                                      notify.Notifier
 
 	rootCmd = &cobra.Command{
@@ -44,8 +44,10 @@ const (
 	tgApiTokenEnv     = "TG_TOKEN"
 	tgUsernameEnv     = "TG_USERNAME"
 	notifierEnv       = "NOTIFIER"
+	minCapacityEnv    = "MIN_CAPACITY"
 
 	defaultSearchInterval = 60
+	defaultMinCapacity    = 1
 
 	covishield = "covishield"
 	covaxin    = "covaxin"
@@ -70,6 +72,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&tgApiToken, "telegram-token", "t", os.Getenv(tgApiTokenEnv), fmt.Sprintf("telegram bot API token"))
 	rootCmd.PersistentFlags().StringVarP(&tgUsername, "telegram-username", "u", os.Getenv(tgUsernameEnv), fmt.Sprintf("telegram username"))
 	rootCmd.PersistentFlags().StringP("notifier-type", "n", os.Getenv(notifierEnv), "Notifier to use - email (or) telegram. Default: email")
+	rootCmd.PersistentFlags().IntVarP(&minCapacity, "min-capacity", "m", getIntEnv(minCapacityEnv), fmt.Sprintf("Filter by minimum vaccination capacity. Default: (%v)", defaultMinCapacity))
+
 }
 
 // Execute executes the main command
@@ -107,6 +111,9 @@ func checkFlags() error {
 	}
 	if !(fee == "" || fee == free || fee == paid) {
 		return errors.New("Invalid fee preference, please use free or paid")
+	}
+	if minCapacity == 0 {
+		minCapacity = defaultMinCapacity
 	}
 	return nil
 }
