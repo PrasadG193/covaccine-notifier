@@ -38,7 +38,7 @@ const (
 	minCapacityEnv    = "MIN_CAPACITY"
 
 	defaultSearchInterval = 60
-	defaultMinCapacity = 1
+	defaultMinCapacity    = 1
 
 	covishield = "covishield"
 	covaxin    = "covaxin"
@@ -57,7 +57,7 @@ func init() {
 	rootCmd.PersistentFlags().IntVarP(&interval, "interval", "i", getIntEnv(searchIntervalEnv), fmt.Sprintf("Interval to repeat the search. Default: (%v) second", defaultSearchInterval))
 	rootCmd.PersistentFlags().StringVarP(&vaccine, "vaccine", "v", os.Getenv(vaccineEnv), fmt.Sprintf("Vaccine preferences - covishield (or) covaxin. Default: No preference"))
 	rootCmd.PersistentFlags().StringVarP(&fee, "fee", "f", os.Getenv(feeEnv), fmt.Sprintf("Fee preferences - free (or) paid. Default: No preference"))
-    rootCmd.PersistentFlags().IntVarP(&minCapacity, "min-capacity", "m", getIntEnv(minCapacityEnv), fmt.Sprintf("Filter by minimum vaccination capacity. Default: (%v)", defaultMinCapacity))
+	rootCmd.PersistentFlags().IntVarP(&minCapacity, "min-capacity", "m", getIntEnv(minCapacityEnv), fmt.Sprintf("Filter by minimum vaccination capacity. Default: (%v)", defaultMinCapacity))
 }
 
 // Execute executes the main command
@@ -90,7 +90,7 @@ func checkFlags() error {
 		return errors.New("Invalid fee preference, please use free or paid")
 	}
 	if minCapacity == 0 {
-	    minCapacity = defaultMinCapacity
+		minCapacity = defaultMinCapacity
 	}
 	return nil
 }
