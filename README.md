@@ -35,6 +35,7 @@ Usage:
 Flags:
   -a, --age int                    Search appointment for age
   -d, --district string            Search by district name
+  -o, --dose int                   Dose preference - 1 or 2. Default: 0 (both)
   -e, --email string               Email address to send notifications
   -f, --fee string                 Fee preferences - free (or) paid. Default: No preference
   -h, --help                       help for covaccine-notifier
@@ -72,7 +73,7 @@ covaccine-notifier --pincode 444002 --age 27  --email <email-id> --password <ema
 #### Enable Telegram Notification
 
 ```
-covaccine-notifier --pincode 444002 --age 27  --notifier-type telegram --telegram-token <tlegram-token> --telegram-username <telegram-username>
+covaccine-notifier --pincode 444002 --age 27  --notifier-type telegram --telegram-token <telegram-token> --telegram-username <telegram-username>
 ```
 
 ### Docker

@@ -18,8 +18,8 @@ var (
 	pinCode, state, district, email, password, date, vaccine, fee string
 	tgApiToken, tgUsername                                        string
 	notifierType                                                  NotifierType
-	age, interval, minCapacity                                    int
 	notifier                                                      notify.Notifier
+	age, interval, minCapacity, dose                              int
 
 	rootCmd = &cobra.Command{
 		Use:   "covaccine-notifier [FLAGS]",
@@ -45,6 +45,7 @@ const (
 	tgUsernameEnv     = "TG_USERNAME"
 	notifierEnv       = "NOTIFIER"
 	minCapacityEnv    = "MIN_CAPACITY"
+	doseEnv           = "DOSE"
 
 	defaultSearchInterval = 60
 	defaultMinCapacity    = 1
@@ -73,6 +74,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&tgUsername, "telegram-username", "u", os.Getenv(tgUsernameEnv), fmt.Sprintf("telegram username"))
 	rootCmd.PersistentFlags().StringP("notifier-type", "n", os.Getenv(notifierEnv), "Notifier to use - email (or) telegram. Default: email")
 	rootCmd.PersistentFlags().IntVarP(&minCapacity, "min-capacity", "m", getIntEnv(minCapacityEnv), fmt.Sprintf("Filter by minimum vaccination capacity. Default: (%v)", defaultMinCapacity))
+	rootCmd.PersistentFlags().IntVarP(&dose, "dose", "o", getIntEnv(doseEnv), "Dose preference - 1 or 2. Default: 0 (both)")
 
 }
 
@@ -114,6 +116,9 @@ func checkFlags() error {
 	}
 	if minCapacity == 0 {
 		minCapacity = defaultMinCapacity
+	}
+	if dose < 0 || dose > 2 {
+		return errors.New("Invalid dose preference, please use 1 or 2")
 	}
 	return nil
 }
