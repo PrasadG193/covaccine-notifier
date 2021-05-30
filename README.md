@@ -33,18 +33,18 @@ Usage:
   covaccine-notifier [FLAGS] [flags]
 
 Flags:
-  -h, --help                help for covaccine-notifier
-  -a, --age int             Search appointment for age
-  -s, --state string        Search by state name
-  -d, --district string     Search by district name
-  -c, --pincode string      Search by pin code
-  -e, --email string        Email address to send notifications
-  -p, --password string     Email ID password for auth
-  -i, --interval int        Interval to repeat the search. Default: (60) second
-  -f, --fee string          Fee preferences - free (or) paid. Default: No preference
-  -v, --vaccine string      Vaccine preferences - covishield (or) covaxin. Default: No preference
-  -m, --min-capacity int     Filter by minimum vaccination capacity. Default: 1
-
+  -a, --age int            Search appointment for age
+  -d, --district string    Search by district name
+  -o, --dose int           Dose preference - 1 or 2. Default: 0 (both)
+  -e, --email string       Email address to send notifications
+  -f, --fee string         Fee preferences - free (or) paid. Default: No preference
+  -h, --help               help for covaccine-notifier
+  -i, --interval int       Interval to repeat the search. Default: (60) second
+  -m, --min-capacity int   Filter by minimum vaccination capacity. Default: (1)
+  -p, --password string    Email ID password for auth
+  -c, --pincode string     Search by pin code
+  -s, --state string       Search by state name
+  -v, --vaccine string     Vaccine preferences - covishield (or) covaxin. Default: No preference
 ```
 
 **Note:** Gmail password won't work for 2FA enabled accounts. Follow [this](https://support.google.com/accounts/answer/185833?p=InvalidSecondFactor&visit_id=637554658548216477-2576856839&rd=1) guide to generate app token password and use it with `--password` arg 

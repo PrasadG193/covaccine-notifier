@@ -16,7 +16,10 @@ import (
 
 // https://apisetu.gov.in/public/api/cowin
 const (
-	baseURL                     = "https://cdn-api.co-vin.in/api"
+	baseURL = "https://cdn-api.co-vin.in/api"
+	// Public endpoints for calendarByPin and calendarByDistrict return cached results which can be 30 mins late
+	// That's why we are using the endpoints which are called after login. These endpoints return 403 sometimes
+	// but works after retry. This tradeoff is acceptable as we are getting the correct availability.
 	calendarByPinURLFormat      = "/v2/appointment/sessions/calendarByPin?pincode=%s&date=%s"
 	calendarByDistrictURLFormat = "/v2/appointment/sessions/calendarByDistrict?district_id=%d&date=%s"
 	listStatesURLFormat         = "/v2/admin/location/states"
@@ -68,12 +71,14 @@ type Appointments struct {
 			Fee     string `json:"fee"`
 		} `json:"vaccine_fees"`
 		Sessions []struct {
-			SessionID         string   `json:"session_id"`
-			Date              string   `json:"date"`
-			AvailableCapacity float64  `json:"available_capacity"`
-			MinAgeLimit       int      `json:"min_age_limit"`
-			Vaccine           string   `json:"vaccine"`
-			Slots             []string `json:"slots"`
+			SessionID              string   `json:"session_id"`
+			Date                   string   `json:"date"`
+			AvailableCapacity      float64  `json:"available_capacity"`
+			AvailableCapacityDose1 float64  `json:"available_capacity_dose1"`
+			AvailableCapacityDose2 float64  `json:"available_capacity_dose2"`
+			MinAgeLimit            int      `json:"min_age_limit"`
+			Vaccine                string   `json:"vaccine"`
+			Slots                  []string `json:"slots"`
 		} `json:"sessions"`
 	} `json:"centers"`
 }
@@ -206,7 +211,21 @@ func getAvailableSessions(response []byte, age int, minCapacity int) error {
 			continue
 		}
 		for _, s := range center.Sessions {
-			if s.MinAgeLimit <= age && s.AvailableCapacity >= float64(minCapacity) && isPreferredAvailable(s.Vaccine, vaccine) {
+			if s.MinAgeLimit <= age && s.AvailableCapacity > 0 && isPreferredAvailable(s.Vaccine, vaccine) {
+				switch dose {
+				case 1:
+					if s.AvailableCapacityDose1 < float64(minCapacity) {
+						continue
+					}
+				case 2:
+					if s.AvailableCapacityDose2 < float64(minCapacity) {
+						continue
+					}
+				case 0:
+					if s.AvailableCapacity < float64(minCapacity) {
+						continue
+					}
+				}
 				fmt.Fprintln(w, fmt.Sprintf("Center\t%s", center.Name))
 				fmt.Fprintln(w, fmt.Sprintf("State\t%s", center.StateName))
 				fmt.Fprintln(w, fmt.Sprintf("District\t%s", center.DistrictName))
@@ -221,7 +240,8 @@ func getAvailableSessions(response []byte, age int, minCapacity int) error {
 				}
 				fmt.Fprintln(w, fmt.Sprintf("Sessions\t"))
 				fmt.Fprintln(w, fmt.Sprintf("\tDate\t%s", s.Date))
-				fmt.Fprintln(w, fmt.Sprintf("\tAvailableCapacity\t%f", s.AvailableCapacity))
+				fmt.Fprintln(w, fmt.Sprintf("\tAvailable Dose-1\t%f", s.AvailableCapacityDose1))
+				fmt.Fprintln(w, fmt.Sprintf("\tAvailable Dose-2\t%f", s.AvailableCapacityDose2))
 				fmt.Fprintln(w, fmt.Sprintf("\tMinAgeLimit\t%d", s.MinAgeLimit))
 				fmt.Fprintln(w, fmt.Sprintf("\tVaccine\t%s", s.Vaccine))
 				fmt.Fprintln(w, fmt.Sprintf("\tSlots"))
@@ -236,7 +256,7 @@ func getAvailableSessions(response []byte, age int, minCapacity int) error {
 		return err
 	}
 	if buf.Len() == 0 {
-		log.Printf("No slots available, rechecking after %v seconds", interval)
+		log.Printf("No slots available, min required: %d, rechecking after %v seconds", minCapacity, interval)
 		return nil
 	}
 	log.Print("Found available slots, sending email")
