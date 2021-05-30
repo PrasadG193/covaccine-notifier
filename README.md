@@ -52,7 +52,7 @@ Flags:
 
 **Note:** Gmail password won't work for 2FA enabled accounts. Follow [this](https://support.google.com/accounts/answer/185833?p=InvalidSecondFactor&visit_id=637554658548216477-2576856839&rd=1) guide to generate app token password and use it with `--password` arg 
 
-**Note:** For creating telegram bot follow [this](https://core.telegram.org/bots#6-botfather). Once the new bot is created successfully, send message to the bot before starting covaccine-notifier.
+**Note:** For telegram bot integration with covaccine-notifier follow [this](./docs/telegram-integration.md).
 
 ## Examples
 
