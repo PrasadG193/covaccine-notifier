@@ -17,8 +17,8 @@ import (
 // https://apisetu.gov.in/public/api/cowin
 const (
 	baseURL = "https://cdn-api.co-vin.in/api"
-	// Public endpoints for calendarByPin and calendarByDistrict returns cached results which can be 30 mins late
-	// That's why we are using the endpoints which are called after login. These endpoints returns 403 sometimes
+	// Public endpoints for calendarByPin and calendarByDistrict return cached results which can be 30 mins late
+	// That's why we are using the endpoints which are called after login. These endpoints return 403 sometimes
 	// but works after retry. This tradeoff is acceptable as we are getting the correct availability.
 	calendarByPinURLFormat      = "/v2/appointment/sessions/calendarByPin?pincode=%s&date=%s"
 	calendarByDistrictURLFormat = "/v2/appointment/sessions/calendarByDistrict?district_id=%d&date=%s"
