@@ -14,7 +14,7 @@ import (
 var (
 	pinCode, state, district, email, password, date, vaccine, fee string
 
-	age, interval, minCapacity int
+	age, interval, minCapacity, dose int
 
 	rootCmd = &cobra.Command{
 		Use:   "covaccine-notifier [FLAGS]",
@@ -36,6 +36,7 @@ const (
 	vaccineEnv        = "VACCINE"
 	feeEnv            = "FEE"
 	minCapacityEnv    = "MIN_CAPACITY"
+	doseEnv           = "DOSE"
 
 	defaultSearchInterval = 60
 	defaultMinCapacity    = 1
@@ -58,6 +59,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&vaccine, "vaccine", "v", os.Getenv(vaccineEnv), fmt.Sprintf("Vaccine preferences - covishield (or) covaxin. Default: No preference"))
 	rootCmd.PersistentFlags().StringVarP(&fee, "fee", "f", os.Getenv(feeEnv), fmt.Sprintf("Fee preferences - free (or) paid. Default: No preference"))
 	rootCmd.PersistentFlags().IntVarP(&minCapacity, "min-capacity", "m", getIntEnv(minCapacityEnv), fmt.Sprintf("Filter by minimum vaccination capacity. Default: (%v)", defaultMinCapacity))
+	rootCmd.PersistentFlags().IntVarP(&dose, "dose", "", getIntEnv(doseEnv), "Dose preference - 1 or 2. Default: 0 (both)")
 }
 
 // Execute executes the main command
@@ -91,6 +93,9 @@ func checkFlags() error {
 	}
 	if minCapacity == 0 {
 		minCapacity = defaultMinCapacity
+	}
+	if dose < 0 || dose > 2 {
+		return errors.New("Invalid dose preference, please use 1 or 2")
 	}
 	return nil
 }
