@@ -59,7 +59,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&vaccine, "vaccine", "v", os.Getenv(vaccineEnv), fmt.Sprintf("Vaccine preferences - covishield (or) covaxin. Default: No preference"))
 	rootCmd.PersistentFlags().StringVarP(&fee, "fee", "f", os.Getenv(feeEnv), fmt.Sprintf("Fee preferences - free (or) paid. Default: No preference"))
 	rootCmd.PersistentFlags().IntVarP(&minCapacity, "min-capacity", "m", getIntEnv(minCapacityEnv), fmt.Sprintf("Filter by minimum vaccination capacity. Default: (%v)", defaultMinCapacity))
-	rootCmd.PersistentFlags().IntVarP(&dose, "dose", "", getIntEnv(doseEnv), "Dose preference - 1 or 2. Default: 0 (both)")
+	rootCmd.PersistentFlags().IntVarP(&dose, "dose", "o", getIntEnv(doseEnv), "Dose preference - 1 or 2. Default: 0 (both)")
 }
 
 // Execute executes the main command
