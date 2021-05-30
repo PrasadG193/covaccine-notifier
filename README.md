@@ -43,7 +43,7 @@ Flags:
   -i, --interval int        Interval to repeat the search. Default: (60) second
   -f, --fee string          Fee preferences - free (or) paid. Default: No preference
   -v, --vaccine string      Vaccine preferences - covishield (or) covaxin. Default: No preference
-  -m, --minCapacity int     Filter by minimum vaccination capacity. Default: 1
+  -m, --min-capacity int     Filter by minimum vaccination capacity. Default: 1
 
 ```
 
