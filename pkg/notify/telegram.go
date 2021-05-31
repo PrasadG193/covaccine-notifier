@@ -42,7 +42,7 @@ func NewTelegram(username, token string) (Notifier, error) {
 			}, nil
 		}
 	}
-	return nil, errors.New(fmt.Sprintf("Unable to get the chatID \n Send message to the bot %s", bot.Self.UserName))
+	return nil, errors.New(fmt.Sprintf("Unable to get the chatID, Send message to the bot %s", bot.Self.UserName))
 }
 
 func (t *Telegram) SendMessage(body string) error {
