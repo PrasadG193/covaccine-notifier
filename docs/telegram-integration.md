@@ -31,7 +31,7 @@ The way to setup telegram bot with covaccine notifier
 * **Step 3 : Start covaccine-notifier with following command**
 
     ```
-    covaccine-notifier --pincode 444002 --age 47  --notifier-type telegram --telegram-token <telegram-token> --telegram-username <telegram-username>
+    covaccine-notifier telegram --pincode 444002 --age 47 --token <telegram-token> --username <telegram-username>
     ```
 
     Sample Screenshot

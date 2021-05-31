@@ -14,7 +14,7 @@ type Telegram struct {
 	Bot    *tgbotapi.BotAPI
 }
 
-func NewTelegram(token, username string) (Notifier, error) {
+func NewTelegram(username, token string) (Notifier, error) {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Unable to find bot for the given botAPI token %s", token))

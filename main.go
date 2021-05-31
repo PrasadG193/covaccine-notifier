@@ -7,25 +7,39 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/PrasadG193/covaccine-notifier/pkg/notify"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+
+	"github.com/PrasadG193/covaccine-notifier/pkg/notify"
 )
 
 type NotifierType string
 
 var (
-	pinCode, state, district, email, password, date, vaccine, fee string
-	tgApiToken, tgUsername                                        string
-	notifierType                                                  NotifierType
-	notifier                                                      notify.Notifier
-	age, interval, minCapacity, dose                              int
+	pinCode, state, district, date, vaccine, fee string
+	username, password, token                    string
+	notifierType                                 NotifierType
+	age, interval, minCapacity, dose             int
 
 	rootCmd = &cobra.Command{
 		Use:   "covaccine-notifier [FLAGS]",
 		Short: "CoWIN Vaccine availability notifier India",
+	}
+
+	telegramCmd = &cobra.Command{
+		Use:   "telegram [FLAGS]",
+		Short: "Notify slots availability using telegram",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			notifierType = NotifierType(cmd.PersistentFlags().Lookup("notifier-type").Value.String())
+			notifierType = NotifierType(TelegramNotifierType)
+			return Run(args)
+		},
+	}
+
+	emailCmd = &cobra.Command{
+		Use:   "email [FLAGS]",
+		Short: "Notify slots avaliability using email",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			notifierType = NotifierType(EmailNotifierType)
 			return Run(args)
 		},
 	}
@@ -61,21 +75,28 @@ const (
 )
 
 func init() {
+	rootCmd.PersistentFlags().IntVarP(&age, "age", "a", getIntEnv(ageEnv), "Search appointment for age (required)")
+	rootCmd.MarkPersistentFlagRequired("age")
 	rootCmd.PersistentFlags().StringVarP(&pinCode, "pincode", "c", os.Getenv(pinCodeEnv), "Search by pin code")
 	rootCmd.PersistentFlags().StringVarP(&state, "state", "s", os.Getenv(stateNameEnv), "Search by state name")
 	rootCmd.PersistentFlags().StringVarP(&district, "district", "d", os.Getenv(districtNameEnv), "Search by district name")
-	rootCmd.PersistentFlags().IntVarP(&age, "age", "a", getIntEnv(ageEnv), "Search appointment for age")
-	rootCmd.PersistentFlags().StringVarP(&email, "email", "e", os.Getenv(emailIDEnv), "Email address to send notifications")
-	rootCmd.PersistentFlags().StringVarP(&password, "password", "p", os.Getenv(emailPasswordEnv), "Email ID password for auth")
 	rootCmd.PersistentFlags().IntVarP(&interval, "interval", "i", getIntEnv(searchIntervalEnv), fmt.Sprintf("Interval to repeat the search. Default: (%v) second", defaultSearchInterval))
 	rootCmd.PersistentFlags().StringVarP(&vaccine, "vaccine", "v", os.Getenv(vaccineEnv), fmt.Sprintf("Vaccine preferences - covishield (or) covaxin. Default: No preference"))
 	rootCmd.PersistentFlags().StringVarP(&fee, "fee", "f", os.Getenv(feeEnv), fmt.Sprintf("Fee preferences - free (or) paid. Default: No preference"))
-	rootCmd.PersistentFlags().StringVarP(&tgApiToken, "telegram-token", "t", os.Getenv(tgApiTokenEnv), fmt.Sprintf("telegram bot API token"))
-	rootCmd.PersistentFlags().StringVarP(&tgUsername, "telegram-username", "u", os.Getenv(tgUsernameEnv), fmt.Sprintf("telegram username"))
-	rootCmd.PersistentFlags().StringP("notifier-type", "n", os.Getenv(notifierEnv), "Notifier to use - email (or) telegram. Default: email")
 	rootCmd.PersistentFlags().IntVarP(&minCapacity, "min-capacity", "m", getIntEnv(minCapacityEnv), fmt.Sprintf("Filter by minimum vaccination capacity. Default: (%v)", defaultMinCapacity))
 	rootCmd.PersistentFlags().IntVarP(&dose, "dose", "o", getIntEnv(doseEnv), "Dose preference - 1 or 2. Default: 0 (both)")
 
+	rootCmd.AddCommand(emailCmd, telegramCmd)
+
+	emailCmd.PersistentFlags().StringVarP(&username, "username", "u", os.Getenv(emailIDEnv), "Email address to send notifications")
+	emailCmd.MarkPersistentFlagRequired("username")
+	emailCmd.PersistentFlags().StringVarP(&password, "password", "p", os.Getenv(emailPasswordEnv), "Email ID password for auth")
+	emailCmd.MarkPersistentFlagRequired("password")
+
+	telegramCmd.PersistentFlags().StringVarP(&username, "username", "u", os.Getenv(tgUsernameEnv), fmt.Sprintf("telegram username"))
+	telegramCmd.MarkPersistentFlagRequired("username")
+	telegramCmd.PersistentFlags().StringVarP(&token, "token", "t", os.Getenv(tgApiTokenEnv), fmt.Sprintf("telegram bot API token"))
+	telegramCmd.MarkPersistentFlagRequired("token")
 }
 
 // Execute executes the main command
@@ -91,19 +112,6 @@ func checkFlags() error {
 	}
 	if len(pinCode) == 0 && (len(state) == 0 || len(district) == 0) {
 		return errors.New("Missing state or district name option")
-	}
-	if age == 0 {
-		return errors.New("Missing age option")
-	}
-	switch notifierType {
-	case TelegramNotifierType:
-		if len(tgApiToken) == 0 || len(tgUsername) == 0 {
-			return errors.New("Missing telegram bot api token or username or both")
-		}
-	default:
-		if len(email) == 0 || len(password) == 0 {
-			return errors.New("Missing email creds")
-		}
 	}
 	if interval == 0 {
 		interval = defaultSearchInterval
@@ -142,9 +150,9 @@ func getIntEnv(envVar string) int {
 func getNotifier() (notify.Notifier, error) {
 	switch notifierType {
 	case TelegramNotifierType:
-		return notify.NewTelegram(tgApiToken, tgUsername)
+		return notify.NewTelegram(username, token)
 	default:
-		return notify.NewEmail(email, password), nil
+		return notify.NewEmail(username, password), nil
 	}
 }
 
@@ -152,12 +160,11 @@ func Run(args []string) error {
 	if err := checkFlags(); err != nil {
 		return err
 	}
-	var err error
-	notifier, err = getNotifier()
+	notifier, err := getNotifier()
 	if err != nil {
 		return err
 	}
-	if err := checkSlots(); err != nil {
+	if err := checkSlots(notifier); err != nil {
 		return err
 	}
 	ticker := time.NewTicker(time.Second * time.Duration(interval))
@@ -165,17 +172,17 @@ func Run(args []string) error {
 	for {
 		select {
 		case <-ticker.C:
-			if err := checkSlots(); err != nil {
+			if err := checkSlots(notifier); err != nil {
 				return err
 			}
 		}
 	}
 }
 
-func checkSlots() error {
+func checkSlots(notifier notify.Notifier) error {
 	// Search for slots
 	if len(pinCode) != 0 {
-		return searchByPincode(pinCode)
+		return searchByPincode(notifier, pinCode)
 	}
-	return searchByStateDistrict(age, state, district)
+	return searchByStateDistrict(notifier, state, district)
 }

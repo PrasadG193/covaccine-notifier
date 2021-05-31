@@ -1,7 +1,13 @@
 package notify
 
 import (
+	"fmt"
 	"net/smtp"
+)
+
+const (
+	smtpServerAddress = "smtp.gmail.com"
+	smtpServerPort    = "587"
 )
 
 type Email struct {
@@ -23,8 +29,8 @@ func (e *Email) SendMessage(body string) error {
 		"Vaccination slots are available at the following centers:\n\n" +
 		body
 
-	err := smtp.SendMail("smtp.gmail.com:587",
-		smtp.PlainAuth("", e.Id, e.Pass, "smtp.gmail.com"),
+	err := smtp.SendMail(fmt.Sprintf("%s:%s", smtpServerAddress, smtpServerPort),
+		smtp.PlainAuth("", e.Id, e.Pass, smtpServerAddress),
 		e.Id, []string{e.Id}, []byte(msg))
 
 	if err != nil {
