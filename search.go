@@ -262,8 +262,5 @@ func getAvailableSessions(notifier notify.Notifier, response []byte, age int, mi
 		return nil
 	}
 	log.Print("Found available slots, sending notification")
-	if err := notifier.SendMessage(buf.String()); err != nil {
-		return err
-	}
-	return nil
+	return notifier.SendMessage(buf.String())
 }
