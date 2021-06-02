@@ -33,9 +33,9 @@ Usage:
   covaccine-notifier [command]
 
 Available Commands:
-  email       Notify slots avaliability using email
+  email       Notify slots availability using Email
   help        Help about any command
-  telegram    Notify slots availability using telegram
+  telegram    Notify slots availability using Telegram
 
 Flags:
   -a, --age int            Search appointment for age (required)

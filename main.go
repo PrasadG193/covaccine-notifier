@@ -37,7 +37,7 @@ var (
 
 	emailCmd = &cobra.Command{
 		Use:   "email [FLAGS]",
-		Short: "Notify slots availability using email",
+		Short: "Notify slots availability using Email",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			notifier := notify.NewEmail(username, password)
 			return Run(args, notifier)
