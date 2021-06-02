@@ -210,6 +210,7 @@ func getAvailableSessions(response []byte, age int, minCapacity int) error {
 		if !isPreferredAvailable(center.FeeType, fee) {
 			continue
 		}
+		flag := true
 		for _, s := range center.Sessions {
 			if s.MinAgeLimit <= age && s.AvailableCapacity > 0 && isPreferredAvailable(s.Vaccine, vaccine) {
 				switch dose {
@@ -226,17 +227,20 @@ func getAvailableSessions(response []byte, age int, minCapacity int) error {
 						continue
 					}
 				}
-				fmt.Fprintln(w, fmt.Sprintf("Center\t%s", center.Name))
-				fmt.Fprintln(w, fmt.Sprintf("State\t%s", center.StateName))
-				fmt.Fprintln(w, fmt.Sprintf("District\t%s", center.DistrictName))
-				fmt.Fprintln(w, fmt.Sprintf("PinCode\t%d", center.Pincode))
-				fmt.Fprintln(w, fmt.Sprintf("Fee\t%s", center.FeeType))
-				if len(center.VaccineFees) != 0 {
-					fmt.Fprintln(w, fmt.Sprintf("Vaccine\t"))
-				}
-				for _, v := range center.VaccineFees {
-					fmt.Fprintln(w, fmt.Sprintf("\tName\t%s", v.Vaccine))
-					fmt.Fprintln(w, fmt.Sprintf("\tFees\t%s", v.Fee))
+				if flag {
+					fmt.Fprintln(w, fmt.Sprintf("Center\t%s", center.Name))
+					fmt.Fprintln(w, fmt.Sprintf("State\t%s", center.StateName))
+					fmt.Fprintln(w, fmt.Sprintf("District\t%s", center.DistrictName))
+					fmt.Fprintln(w, fmt.Sprintf("PinCode\t%d", center.Pincode))
+					fmt.Fprintln(w, fmt.Sprintf("Fee\t%s", center.FeeType))
+					if len(center.VaccineFees) != 0 {
+						fmt.Fprintln(w, fmt.Sprintf("Vaccine\t"))
+					}
+					for _, v := range center.VaccineFees {
+						fmt.Fprintln(w, fmt.Sprintf("\tName\t%s", v.Vaccine))
+						fmt.Fprintln(w, fmt.Sprintf("\tFees\t%s", v.Fee))
+					}
+					flag = false
 				}
 				fmt.Fprintln(w, fmt.Sprintf("Sessions\t"))
 				fmt.Fprintln(w, fmt.Sprintf("\tDate\t%s", s.Date))
@@ -248,9 +252,13 @@ func getAvailableSessions(response []byte, age int, minCapacity int) error {
 				for _, slot := range s.Slots {
 					fmt.Fprintln(w, fmt.Sprintf("\t\t%s", slot))
 				}
-				fmt.Fprintln(w, "-----------------------------")
+				fmt.Fprintln(w, "-------------------------------------")
 			}
 		}
+		if !flag {
+			fmt.Fprintln(w, "=====================================")
+		}
+
 	}
 	if err := w.Flush(); err != nil {
 		return err
