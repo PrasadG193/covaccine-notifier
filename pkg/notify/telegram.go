@@ -11,7 +11,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-const timeout = 60
+const (
+	timeout             = 10
+	maxOneMessageLength = 4096
+)
 
 type Telegram struct {
 	ChatID int64
@@ -55,7 +58,7 @@ func NewTelegram(username, token string) (Notifier, error) {
 
 // SendMessage takes message body and send it to the given chatID as text message or file
 func (t *Telegram) SendMessage(body string) error {
-	if len(body) > 4096 {
+	if len(body) > maxOneMessageLength {
 		log.Printf("Message body too long, Message will be sent as file ")
 		fileBytes := tgbotapi.FileBytes{
 			Name:  fmt.Sprintf("slots-available-%d.txt", time.Now().Unix()),
@@ -65,12 +68,12 @@ func (t *Telegram) SendMessage(body string) error {
 		if _, err := t.Bot.Send(documentConfig); err != nil {
 			return errors.Wrap(err, "Unable to send message to telegram")
 		}
-	} else {
-		msg := tgbotapi.NewMessage(t.ChatID, body)
-		_, err := t.Bot.Send(msg)
-		if err != nil {
-			return errors.Wrap(err, "Unable to send message to telegram")
-		}
+		return nil
+	}
+	msg := tgbotapi.NewMessage(t.ChatID, body)
+	_, err := t.Bot.Send(msg)
+	if err != nil {
+		return errors.Wrap(err, "Unable to send message to telegram")
 	}
 	return nil
 }
