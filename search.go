@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+
+	"github.com/PrasadG193/covaccine-notifier/pkg/notify"
 )
 
 // https://apisetu.gov.in/public/api/cowin
@@ -120,12 +122,12 @@ func queryServer(path string) ([]byte, error) {
 	return bodyBytes, nil
 }
 
-func searchByPincode(pinCode string) error {
+func searchByPincode(notifier notify.Notifier, pinCode string) error {
 	response, err := queryServer(fmt.Sprintf(calendarByPinURLFormat, pinCode, timeNow()))
 	if err != nil {
 		return errors.Wrap(err, "Failed to fetch appointment sessions")
 	}
-	return getAvailableSessions(response, age, minCapacity)
+	return getAvailableSessions(notifier, response, age, minCapacity)
 }
 
 func getStateIDByName(state string) (int, error) {
@@ -164,7 +166,7 @@ func getDistrictIDByName(stateID int, district string) (int, error) {
 	return 0, errors.New("Invalid district name passed")
 }
 
-func searchByStateDistrict(age int, state, district string) error {
+func searchByStateDistrict(notifier notify.Notifier, state, district string) error {
 	var err1 error
 	if stateID == 0 {
 		stateID, err1 = getStateIDByName(state)
@@ -182,7 +184,7 @@ func searchByStateDistrict(age int, state, district string) error {
 	if err != nil {
 		return errors.Wrap(err, "Failed to fetch appointment sessions")
 	}
-	return getAvailableSessions(response, age, minCapacity)
+	return getAvailableSessions(notifier, response, age, minCapacity)
 }
 
 // isPreferredAvailable checks for availability of preferences
@@ -194,7 +196,7 @@ func isPreferredAvailable(current, preference string) bool {
 	}
 }
 
-func getAvailableSessions(response []byte, age int, minCapacity int) error {
+func getAvailableSessions(notifier notify.Notifier, response []byte, age int, minCapacity int) error {
 	if response == nil {
 		log.Printf("Received unexpected response, rechecking after %v seconds", interval)
 		return nil
@@ -259,6 +261,6 @@ func getAvailableSessions(response []byte, age int, minCapacity int) error {
 		log.Printf("No slots available, min required: %d, rechecking after %v seconds", minCapacity, interval)
 		return nil
 	}
-	log.Print("Found available slots, sending email")
-	return sendMail(email, password, buf.String())
+	log.Print("Found available slots, sending notification")
+	return notifier.SendMessage(buf.String())
 }
