@@ -22,10 +22,16 @@ const (
 	// Public endpoints for calendarByPin and calendarByDistrict return cached results which can be 30 mins late
 	// That's why we are using the endpoints which are called after login. These endpoints return 403 sometimes
 	// but works after retry. This tradeoff is acceptable as we are getting the correct availability.
+	// FIXME: Now, these endpoints requires authentication. We will switch to public endpoints for now
 	calendarByPinURLFormat      = "/v2/appointment/sessions/calendarByPin?pincode=%s&date=%s"
 	calendarByDistrictURLFormat = "/v2/appointment/sessions/calendarByDistrict?district_id=%d&date=%s"
-	listStatesURLFormat         = "/v2/admin/location/states"
-	listDistrictsURLFormat      = "/v2/admin/location/districts/%d"
+
+	// Public endpoints
+	calendarByPinPublicURLFormat      = "/v2/appointment/sessions/public/calendarByPin?pincode=%s&date=%s"
+	calendarByDistrictPublicURLFormat = "/v2/appointment/sessions/public/calendarByDistrict?district_id=%d&date=%s"
+
+	listStatesURLFormat    = "/v2/admin/location/states"
+	listDistrictsURLFormat = "/v2/admin/location/districts/%d"
 )
 
 var (
@@ -123,7 +129,7 @@ func queryServer(path string) ([]byte, error) {
 }
 
 func searchByPincode(notifier notify.Notifier, pinCode string) error {
-	response, err := queryServer(fmt.Sprintf(calendarByPinURLFormat, pinCode, timeNow()))
+	response, err := queryServer(fmt.Sprintf(calendarByPinPublicURLFormat, pinCode, timeNow()))
 	if err != nil {
 		return errors.Wrap(err, "Failed to fetch appointment sessions")
 	}
@@ -180,7 +186,7 @@ func searchByStateDistrict(notifier notify.Notifier, state, district string) err
 			return err1
 		}
 	}
-	response, err := queryServer(fmt.Sprintf(calendarByDistrictURLFormat, districtID, timeNow()))
+	response, err := queryServer(fmt.Sprintf(calendarByDistrictPublicURLFormat, districtID, timeNow()))
 	if err != nil {
 		return errors.Wrap(err, "Failed to fetch appointment sessions")
 	}
