@@ -2,6 +2,7 @@ package notify
 
 import (
 	"fmt"
+	"net/http"
 
 	mattermost "github.com/mattermost/mattermost-server/v5/model"
 )
@@ -21,15 +22,15 @@ func NewMattermost(url, token, username string) (Notifier, error) {
 		"Authorization": fmt.Sprintf("Bearer %s", token),
 	}
 	botUser, res := client.GetMe("")
-	if res.StatusCode != 200 {
+	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unable to authenticate bot user: %s, using token", botUser.Nickname)
 	}
 	sendUser, res := client.GetUserByUsername(username, "")
-	if res.StatusCode != 200 {
+	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unable to find user id of user: %s", username)
 	}
 	directChannel, res := client.CreateDirectChannel(botUser.Id, sendUser.Id)
-	if res.StatusCode != 201 {
+	if res.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("unable to crete direct message between botUser: %s and %s", botUser.Nickname, username)
 	}
 	return &Mattermost{
@@ -43,7 +44,7 @@ func (m *Mattermost) SendMessage(body string) error {
 	if _, res := m.Client.CreatePost(&mattermost.Post{
 		ChannelId: m.ChannelID,
 		Message:   body,
-	}); res.StatusCode != 201 {
+	}); res.StatusCode != http.StatusCreated {
 		return fmt.Errorf("error sending message to channel: %s", m.ChannelID)
 	}
 	return nil
