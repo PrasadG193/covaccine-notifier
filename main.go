@@ -112,11 +112,12 @@ func checkFlags() error {
 	if len(pinCode) == 0 && (len(state) == 0 || len(district) == 0) {
 		return errors.New("Missing state or district name option")
 	}
-	if age >= minAgeLimit45 {
+	switch {
+	case age >= minAgeLimit45:
 		userMinAgeLimit = minAgeLimit45
-	} else if age >= minAgeLimit18 {
+	case age >= minAgeLimit18:
 		userMinAgeLimit = minAgeLimit18
-	} else {
+	default:
 		return errors.New("Invalid age, valid for age 18 and above")
 	}
 	if interval == 0 {
