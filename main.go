@@ -14,9 +14,9 @@ import (
 )
 
 var (
-	pinCode, state, district, vaccine, fee string
-	username, password, token              string
-	age, interval, minCapacity, dose       int
+	pinCode, state, district, vaccine, fee   string
+	username, password, token, mattermostURL string
+	age, interval, minCapacity, dose         int
 
 	rootCmd = &cobra.Command{
 		Use:   "covaccine-notifier [FLAGS]",
@@ -28,6 +28,18 @@ var (
 		Short: "Notify slots availability using Telegram",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			notifier, err := notify.NewTelegram(username, token)
+			if err != nil {
+				return err
+			}
+			return Run(args, notifier)
+		},
+	}
+
+	mattermostCmd = &cobra.Command{
+		Use:   "mattermost [FLAGS]",
+		Short: "Notify slots availability using Mattermost",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			notifier, err := notify.NewMattermost(mattermostURL, token, username)
 			if err != nil {
 				return err
 			}
@@ -57,6 +69,9 @@ const (
 	feeEnv            = "FEE"
 	tgApiTokenEnv     = "TG_TOKEN"
 	tgUsernameEnv     = "TG_USERNAME"
+	mmURLEnv          = "MATTERMOST_URL"
+	mmUserEnv         = "MATTERMOST_USERNAME"
+	mmTokenEnv        = "MATTERMOST_TOKEN"
 	minCapacityEnv    = "MIN_CAPACITY"
 	doseEnv           = "DOSE"
 
@@ -82,7 +97,7 @@ func init() {
 	rootCmd.PersistentFlags().IntVarP(&minCapacity, "min-capacity", "m", getIntEnv(minCapacityEnv), fmt.Sprintf("Filter by minimum vaccination capacity. Default: (%v)", defaultMinCapacity))
 	rootCmd.PersistentFlags().IntVarP(&dose, "dose", "o", getIntEnv(doseEnv), "Dose preference - 1 or 2. Default: 0 (both)")
 
-	rootCmd.AddCommand(emailCmd, telegramCmd)
+	rootCmd.AddCommand(emailCmd, telegramCmd, mattermostCmd)
 
 	emailCmd.PersistentFlags().StringVarP(&username, "username", "u", os.Getenv(emailIDEnv), "Email address to send notifications")
 	emailCmd.MarkPersistentFlagRequired("username")
@@ -93,6 +108,13 @@ func init() {
 	telegramCmd.MarkPersistentFlagRequired("username")
 	telegramCmd.PersistentFlags().StringVarP(&token, "token", "t", os.Getenv(tgApiTokenEnv), "telegram bot API token")
 	telegramCmd.MarkPersistentFlagRequired("token")
+
+	mattermostCmd.PersistentFlags().StringVarP(&mattermostURL, "url", "l", os.Getenv(mmURLEnv), "mattermost server url")
+	mattermostCmd.MarkFlagRequired("url")
+	mattermostCmd.PersistentFlags().StringVarP(&username, "username", "u", os.Getenv(mmUserEnv), "mattermost username")
+	mattermostCmd.MarkFlagRequired("username")
+	mattermostCmd.PersistentFlags().StringVarP(&token, "token", "t", os.Getenv(mmTokenEnv), "mattermost bot API token")
+	mattermostCmd.MarkFlagRequired("token")
 }
 
 // Execute executes the main command

@@ -62,6 +62,10 @@ $ ./covaccine-notifier email --help
 
 For telegram bot integration with covaccine-notifier follow [this](./docs/telegram-integration.md).
 
+## Integration with Mattermost
+
+For mattermost integration refer this [document](docs/mattermost-integration.md)
+
 ## Examples
 
 ### Terminal
@@ -82,6 +86,12 @@ covaccine-notifier email --pincode 444002 --age 27  --username <email-id> --pass
 
 ```
 covaccine-notifier telegram --pincode 444002 --age 27 --token <telegram-token> --username <telegram-username>
+```
+
+#### Enable mattermost notification
+
+```bash
+covaccine-notifier mattermost --pincode 444002 --age 27 --token <mattermost-bot-token> --username <mattermost-user-to-sent-messages> --url <mattermost-server-url>
 ```
 
 ### Docker
