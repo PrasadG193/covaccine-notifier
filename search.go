@@ -219,7 +219,7 @@ func getAvailableSessions(notifier notify.Notifier, response []byte, age int, mi
 			continue
 		}
 		for _, s := range center.Sessions {
-			if s.MinAgeLimit <= age && s.AvailableCapacity > 0 && isPreferredAvailable(s.Vaccine, vaccine) {
+			if s.MinAgeLimit == userMinAgeLimit && s.AvailableCapacity > 0 && isPreferredAvailable(s.Vaccine, vaccine) {
 				switch dose {
 				case 1:
 					if s.AvailableCapacityDose1 < float64(minCapacity) {

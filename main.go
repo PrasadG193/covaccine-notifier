@@ -14,9 +14,9 @@ import (
 )
 
 var (
-	pinCode, state, district, vaccine, fee   string
-	username, password, token, mattermostURL string
-	age, interval, minCapacity, dose         int
+	pinCode, state, district, vaccine, fee            string
+	username, password, token, mattermostURL          string
+	age, interval, minCapacity, dose, userMinAgeLimit int
 
 	rootCmd = &cobra.Command{
 		Use:   "covaccine-notifier [FLAGS]",
@@ -83,6 +83,9 @@ const (
 
 	free = "free"
 	paid = "paid"
+
+	minAgeLimit18 = 18
+	minAgeLimit45 = 45
 )
 
 func init() {
@@ -130,6 +133,14 @@ func checkFlags() error {
 	}
 	if len(pinCode) == 0 && (len(state) == 0 || len(district) == 0) {
 		return errors.New("Missing state or district name option")
+	}
+	switch {
+	case age >= minAgeLimit45:
+		userMinAgeLimit = minAgeLimit45
+	case age >= minAgeLimit18:
+		userMinAgeLimit = minAgeLimit18
+	default:
+		return errors.New("Invalid age, valid for age 18 and above")
 	}
 	if interval == 0 {
 		interval = defaultSearchInterval
